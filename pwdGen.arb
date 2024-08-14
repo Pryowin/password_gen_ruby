@@ -1,0 +1,70 @@
+require 'yaml'
+require 'clipboard'
+require 'messagebox'
+
+NUMERICTHRESHOLD = 7
+UPPERCASETHRESHOLD = 6
+WORDLENGTH = 5
+
+class Params
+
+    attr_reader :pwd_length, :pwd_has_upper, :pwd_has_lower, :pwd_has_number, :pwd_has_special
+    
+    def initialize(file)
+        file = __dir__ + "/" + file
+        begin
+            params = YAML.load(File.read(file))    
+        rescue
+            abort "Unable to find #{file}. Application ended." 
+        else
+            @pwd_length = params['pwd_length']
+            @pwd_has_upper = params['pwd_has_upper']
+            @pwd_has_lower = params['pwd_has_lower']
+            @pwd_has_number = params['pwd_has_number']
+            @pwd_has_special = params['pwd_has_special']
+        end
+    end
+end
+
+def pwd_gen
+    pm = get_params
+    raise "At least one type of letter must be valid" unless pm.pwd_has_lower || pm.pwd_has_upper
+    pwd_chars=[]
+    (1..pm.pwd_length).each do |i|
+        if i.modulo(WORDLENGTH) == 0 && pm.pwd_has_special
+            pwd_chars.push('-')
+        else
+            if pm.pwd_has_number && rand(10) > NUMERICTHRESHOLD
+                pwd_chars.push(rand(10).to_s)
+            else
+                pwd_chars.push(pick_letter(pm.pwd_has_upper,pm.pwd_has_lower))
+            end
+        end
+    end
+
+    return pwd_chars.join("")
+end
+
+def pick_letter(pwd_has_upper, pwd_has_lower)
+    letters = ('a'...'z').to_a
+    num = rand(letters.length)
+    return letters[num] unless pwd_has_upper 
+    return letters[num].upcase unless pwd_has_lower
+    if rand(10) > UPPERCASETHRESHOLD
+        return letters[num]
+    else
+        return letters[num].upcase
+    end
+end
+
+def get_params
+    return Params.new('password_params.yml')
+end
+
+pwd = pwd_gen
+Clipboard.copy(pwd)
+MessageBox.new("Password Generator", "Password created and in clipboard \n #{pwd}").show
+
+
+
+

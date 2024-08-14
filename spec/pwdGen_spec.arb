@@ -1,0 +1,14 @@
+
+
+RSpec.describe pick_letter do
+    describe '#upper_case' do
+        it 'returns an upper case letter' do
+            expect(pick_letter(true, false)).to be_between('A','Z').inclusive
+        end
+    end
+    describe '#lower_case' do
+        it 'returns an upper case letter' do
+            expect(pick_letter(false, true)).to be_between('a','z').inclusive
+        end
+    end
+end
